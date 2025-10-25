@@ -1,0 +1,165 @@
+version: "3.8"
+
+services:
+  # VPN Container - All traffic routes through this
+  gluetun:
+    image: qmcgaw/gluetun
+    container_name: gluetun
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    ports:
+      # qBittorrent
+      - "${QBITTORRENT_PORT:-8080}:8080"   # qBittorrent WebUI
+      - "${TORRENT_PORT:-6881}:6881"       # qBittorrent TCP
+      - "${TORRENT_PORT:-6881}:6881/udp"   # qBittorrent UDP
+      # Radarr
+      - "${RADARR_PORT:-7878}:7878"
+      # Sonarr
+      - "${SONARR_PORT:-8989}:8989"
+      # Lidarr
+      - "${LIDARR_PORT:-8686}:8686"
+      # Jackett
+      - "${JACKETT_PORT:-9117}:9117"
+      # Prowlarr
+      - "${PROWLARR_PORT:-9696}:9696"
+      # Whisparr
+      - "${WHISPARR_PORT:-6969}:6969"
+    environment:
+      # VPN Provider Configuration
+      - VPN_SERVICE_PROVIDER=private internet access
+      - VPN_TYPE=${VPN_TYPE:-openvpn}
+      - OPENVPN_USER=${PIA_USERNAME}
+      - OPENVPN_PASSWORD=${PIA_PASSWORD}
+      - SERVER_REGIONS=${VPN_SERVER_REGION:-US New York}
+      
+      # Kill Switch - This ensures no leaks
+      - FIREWALL_OUTBOUND_SUBNETS=${LOCAL_NETWORK:-192.168.1.0/24}
+      - FIREWALL_VPN_INPUT_PORTS=${TORRENT_PORT:-6881}
+      
+      # Optional: Enable for debugging
+      # - LOG_LEVEL=debug
+      
+      # Timezone
+      - TZ=${TZ:-America/New_York}
+    volumes:
+      - ./gluetun:/gluetun
+    restart: unless-stopped
+
+  # qBittorrent - Routes through VPN
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    network_mode: "service:gluetun"  # Route through VPN
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-America/New_York}
+      - WEBUI_PORT=8080
+    volumes:
+      - ./qbittorrent/config:/config
+      - ./downloads:/downloads
+    depends_on:
+      - gluetun
+    restart: unless-stopped
+
+  # Radarr - Routes through VPN
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-America/New_York}
+    volumes:
+      - ./radarr/config:/config
+      - ./downloads:/downloads
+      - ./media/movies:/movies
+    depends_on:
+      - gluetun
+    restart: unless-stopped
+
+  # Sonarr - Routes through VPN
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-America/New_York}
+    volumes:
+      - ./sonarr/config:/config
+      - ./downloads:/downloads
+      - ./media/tv:/tv
+    depends_on:
+      - gluetun
+    restart: unless-stopped
+
+  # Lidarr - Routes through VPN
+  lidarr:
+    image: lscr.io/linuxserver/lidarr:latest
+    container_name: lidarr
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-America/New_York}
+    volumes:
+      - ./lidarr/config:/config
+      - ./downloads:/downloads
+      - ./media/music:/music
+    depends_on:
+      - gluetun
+    restart: unless-stopped
+
+  # Jackett - Routes through VPN
+  jackett:
+    image: lscr.io/linuxserver/jackett:latest
+    container_name: jackett
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-America/New_York}
+      - AUTO_UPDATE=true
+    volumes:
+      - ./jackett/config:/config
+      - ./downloads:/downloads
+    depends_on:
+      - gluetun
+    restart: unless-stopped
+
+  # Prowlarr - Routes through VPN (Modern indexer manager)
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-America/New_York}
+    volumes:
+      - ./prowlarr/config:/config
+    depends_on:
+      - gluetun
+    restart: unless-stopped
+
+  # Whisparr - Routes through VPN (Adult content management)
+  whisparr:
+    image: ghcr.io/hotio/whisparr:nightly
+    container_name: whisparr
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-America/New_York}
+    volumes:
+      - ./whisparr/config:/config
+      - ./downloads:/downloads
+      - ./media/adult:/adult
+    depends_on:
+      - gluetun
+    restart: unless-stopped
