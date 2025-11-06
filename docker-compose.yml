@@ -20,17 +20,36 @@ services:
       - "${SONARR_PORT:-8989}:8989"
       # Lidarr
       - "${LIDARR_PORT:-8686}:8686"
+      # Readarr
+      - "${READARR_PORT:-8787}:8787"
+      # Bazarr
+      - "${BAZARR_PORT:-6767}:6767"
       # Jackett
       - "${JACKETT_PORT:-9117}:9117"
       # Prowlarr
       - "${PROWLARR_PORT:-9696}:9696"
+      # FlareSolverr
+      - "${FLARESOLVERR_PORT:-8191}:8191"
     environment:
-      # VPN Provider Configuration
-      - VPN_SERVICE_PROVIDER=private internet access
+      # VPN Provider Configuration (configured during install)
+      - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER:-private internet access}
       - VPN_TYPE=${VPN_TYPE:-openvpn}
-      - OPENVPN_USER=${PIA_USERNAME}
-      - OPENVPN_PASSWORD=${PIA_PASSWORD}
+      
+      # PIA Specific
+      - OPENVPN_USER=${VPN_USERNAME}
+      - OPENVPN_PASSWORD=${VPN_PASSWORD}
+      
+      # NordVPN/Surfshark/Other Specific (token-based)
+      - OPENVPN_ACCESS_TOKEN=${VPN_TOKEN}
+      
+      # Mullvad Specific
+      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
+      - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESSES}
+      
+      # Server Region/Location
       - SERVER_REGIONS=${VPN_SERVER_REGION:-US New York}
+      - SERVER_CITIES=${VPN_SERVER_CITY}
+      - SERVER_HOSTNAMES=${VPN_SERVER_HOSTNAME}
       
       # Kill Switch - This ensures no leaks
       - FIREWALL_OUTBOUND_SUBNETS=${LOCAL_NETWORK:-192.168.1.0/24}
@@ -113,6 +132,40 @@ services:
       - gluetun
     restart: unless-stopped
 
+  # Readarr - Routes through VPN (Books/Audiobooks)
+  readarr:
+    image: lscr.io/linuxserver/readarr:develop
+    container_name: readarr
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-America/New_York}
+    volumes:
+      - ./readarr/config:/config
+      - ./downloads:/downloads
+      - ./media/books:/books
+    depends_on:
+      - gluetun
+    restart: unless-stopped
+
+  # Bazarr - Routes through VPN (Subtitle Management)
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-America/New_York}
+    volumes:
+      - ./bazarr/config:/config
+      - ./media/movies:/movies
+      - ./media/tv:/tv
+    depends_on:
+      - gluetun
+    restart: unless-stopped
+
   # Jackett - Routes through VPN
   jackett:
     image: lscr.io/linuxserver/jackett:latest
@@ -143,4 +196,126 @@ services:
       - ./prowlarr/config:/config
     depends_on:
       - gluetun
+    restart: unless-stopped
+
+  # FlareSolverr - Routes through VPN (Cloudflare bypass for indexers)
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    network_mode: "service:gluetun"
+    environment:
+      - LOG_LEVEL=info
+      - TZ=${TZ:-America/New_York}
+    depends_on:
+      - gluetun
+    restart: unless-stopped
+
+  # Plex Media Server - Direct network access (NOT through VPN)
+  plex:
+    image: lscr.io/linuxserver/plex:latest
+    container_name: plex
+    network_mode: host  # Requires host network for discovery
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-America/New_York}
+      - VERSION=docker
+      - PLEX_CLAIM=${PLEX_CLAIM}  # Optional: Get from plex.tv/claim
+    volumes:
+      - ./plex/config:/config
+      - ./media/tv:/tv
+      - ./media/movies:/movies
+      - ./media/music:/music
+    restart: unless-stopped
+
+  # Emby Media Server - Direct network access (NOT through VPN)
+  emby:
+    image: lscr.io/linuxserver/emby:latest
+    container_name: emby
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-America/New_York}
+    volumes:
+      - ./emby/config:/config
+      - ./media/tv:/data/tvshows
+      - ./media/movies:/data/movies
+      - ./media/music:/data/music
+    ports:
+      - "${EMBY_PORT:-8096}:8096"      # HTTP
+      - "${EMBY_PORT_HTTPS:-8920}:8920"  # HTTPS
+    restart: unless-stopped
+
+  # Jellyfin Media Server - Direct network access (NOT through VPN)
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest
+    container_name: jellyfin
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-America/New_York}
+    volumes:
+      - ./jellyfin/config:/config
+      - ./media/tv:/data/tvshows
+      - ./media/movies:/data/movies
+      - ./media/music:/data/music
+    ports:
+      - "${JELLYFIN_PORT:-8096}:8096"      # HTTP
+      - "${JELLYFIN_PORT_HTTPS:-8920}:8920"  # HTTPS (optional)
+      - "7359:7359/udp"  # Auto-discovery
+      - "1900:1900/udp"  # Service discovery
+    restart: unless-stopped
+
+  # Channels DVR Server - Direct network access (NOT through VPN)
+  channels-dvr:
+    image: fancybits/channels-dvr:latest
+    container_name: channels-dvr
+    environment:
+      - TZ=${TZ:-America/New_York}
+    volumes:
+      - ./channels-dvr/config:/channels-dvr
+      - ./media/recordings:/shares/DVR
+    ports:
+      - "${CHANNELS_PORT:-8089}:8089"  # Web UI
+    restart: unless-stopped
+
+  # Tautulli - Direct network access (Plex monitoring)
+  tautulli:
+    image: lscr.io/linuxserver/tautulli:latest
+    container_name: tautulli
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-America/New_York}
+    volumes:
+      - ./tautulli/config:/config
+    ports:
+      - "${TAUTULLI_PORT:-8181}:8181"
+    restart: unless-stopped
+
+  # Overseerr - Direct network access (Request management for Plex)
+  overseerr:
+    image: lscr.io/linuxserver/overseerr:latest
+    container_name: overseerr
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-America/New_York}
+    volumes:
+      - ./overseerr/config:/config
+    ports:
+      - "${OVERSEERR_PORT:-5055}:5055"
+    restart: unless-stopped
+
+  # Jellyseerr - Direct network access (Request management for Jellyfin)
+  jellyseerr:
+    image: fallenbagel/jellyseerr:latest
+    container_name: jellyseerr
+    environment:
+      - LOG_LEVEL=info
+      - TZ=${TZ:-America/New_York}
+    volumes:
+      - ./jellyseerr/config:/app/config
+    ports:
+      - "${JELLYSEERR_PORT:-5056}:5055"
     restart: unless-stopped
