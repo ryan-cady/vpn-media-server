@@ -21,7 +21,7 @@ A **complete, customizable, VPN-protected media automation server** with your ch
 ### One Command Installation
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/vpn-media-server.git
+git clone https://github.com/ryan-cady/vpn-media-server.git
 cd vpn-media-server
 chmod +x install.sh && ./install.sh
 ```
@@ -189,7 +189,7 @@ Don't see yours? Gluetun supports **50+ VPN providers** - select "Custom" during
 ### Method 1: Interactive Installer (Recommended)
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/vpn-media-server.git
+git clone https://github.com/ryan-cady/vpn-media-server.git
 cd vpn-media-server
 chmod +x install.sh
 ./install.sh
