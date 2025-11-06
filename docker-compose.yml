@@ -24,8 +24,6 @@ services:
       - "${JACKETT_PORT:-9117}:9117"
       # Prowlarr
       - "${PROWLARR_PORT:-9696}:9696"
-      # Whisparr
-      - "${WHISPARR_PORT:-6969}:6969"
     environment:
       # VPN Provider Configuration
       - VPN_SERVICE_PROVIDER=private internet access
@@ -143,23 +141,6 @@ services:
       - TZ=${TZ:-America/New_York}
     volumes:
       - ./prowlarr/config:/config
-    depends_on:
-      - gluetun
-    restart: unless-stopped
-
-  # Whisparr - Routes through VPN (Adult content management)
-  whisparr:
-    image: ghcr.io/hotio/whisparr:nightly
-    container_name: whisparr
-    network_mode: "service:gluetun"
-    environment:
-      - PUID=${PUID:-1000}
-      - PGID=${PGID:-1000}
-      - TZ=${TZ:-America/New_York}
-    volumes:
-      - ./whisparr/config:/config
-      - ./downloads:/downloads
-      - ./media/adult:/adult
     depends_on:
       - gluetun
     restart: unless-stopped

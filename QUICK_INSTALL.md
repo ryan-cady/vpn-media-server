@@ -40,7 +40,7 @@ mkdir ~/vpn-media-server && cd ~/vpn-media-server
 nano .env
 
 # 4. Create directories
-mkdir -p {gluetun,qbittorrent,radarr,sonarr,lidarr,jackett,prowlarr,whisparr}/config downloads media/{movies,tv,music,adult}
+mkdir -p {gluetun,qbittorrent,radarr,sonarr,lidarr,jackett,prowlarr}/config downloads media/{movies,tv,music,adult}
 
 # 5. Start everything
 docker compose up -d
@@ -71,7 +71,6 @@ Replace `YOUR_IP` with your server's IP (find with: `hostname -I`)
 | Lidarr | http://YOUR_IP:8686 | Set on first login |
 | Jackett | http://YOUR_IP:9117 | None |
 | Prowlarr | http://YOUR_IP:9696 | Set on first login |
-| Whisparr | http://YOUR_IP:6969 | Set on first login |
 
 ---
 

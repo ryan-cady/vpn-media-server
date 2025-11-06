@@ -110,7 +110,7 @@ services:
       - /dev/net/tun:/dev/net/tun
     ports:
       # qBittorrent
-      - "${QBITTORRENT_PORT:-8080}:8080"
+      - "${QBITTORRENT_PORT:-9090}:9090"
       - "${TORRENT_PORT:-6881}:6881"
       - "${TORRENT_PORT:-6881}:6881/udp"
       # Radarr
@@ -123,8 +123,6 @@ services:
       - "${JACKETT_PORT:-9117}:9117"
       # Prowlarr
       - "${PROWLARR_PORT:-9696}:9696"
-      # Whisparr
-      - "${WHISPARR_PORT:-6969}:6969"
     environment:
       - VPN_SERVICE_PROVIDER=private internet access
       - VPN_TYPE=${VPN_TYPE:-openvpn}
@@ -146,7 +144,7 @@ services:
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-America/New_York}
-      - WEBUI_PORT=8080
+      - WEBUI_PORT=9090
     volumes:
       - ./qbittorrent/config:/config
       - ./downloads:/downloads
@@ -232,21 +230,6 @@ services:
       - gluetun
     restart: unless-stopped
 
-  whisparr:
-    image: ghcr.io/hotio/whisparr:nightly
-    container_name: whisparr
-    network_mode: "service:gluetun"
-    environment:
-      - PUID=${PUID:-1000}
-      - PGID=${PGID:-1000}
-      - TZ=${TZ:-America/New_York}
-    volumes:
-      - ./whisparr/config:/config
-      - ./downloads:/downloads
-      - ./media/adult:/adult
-    depends_on:
-      - gluetun
-    restart: unless-stopped
 EOF
 
 echo -e "${GREEN}✓ Created docker-compose.yml${NC}"
@@ -331,13 +314,12 @@ PGID=$GROUP_ID
 TZ=$TIMEZONE
 
 # Ports
-QBITTORRENT_PORT=8080
+QBITTORRENT_PORT=9090
 RADARR_PORT=7878
 SONARR_PORT=8989
 LIDARR_PORT=8686
 JACKETT_PORT=9117
 PROWLARR_PORT=9696
-WHISPARR_PORT=6969
 TORRENT_PORT=6881
 EOF
 
@@ -355,7 +337,6 @@ mkdir -p sonarr/config
 mkdir -p lidarr/config
 mkdir -p jackett/config
 mkdir -p prowlarr/config
-mkdir -p whisparr/config
 mkdir -p downloads/{incomplete,complete}
 mkdir -p media/{movies,tv,music,adult}
 
@@ -418,13 +399,12 @@ echo ""
 echo "Your VPN Media Server is now running!"
 echo ""
 echo "Access your services at:"
-echo "  - qBittorrent:  http://$(hostname -I | awk '{print $1}'):8080 (user: admin, pass: adminadmin)"
+echo "  - qBittorrent:  http://$(hostname -I | awk '{print $1}'):9090 (user: admin, pass: adminadmin)"
 echo "  - Radarr:       http://$(hostname -I | awk '{print $1}'):7878"
 echo "  - Sonarr:       http://$(hostname -I | awk '{print $1}'):8989"
 echo "  - Lidarr:       http://$(hostname -I | awk '{print $1}'):8686"
 echo "  - Jackett:      http://$(hostname -I | awk '{print $1}'):9117"
 echo "  - Prowlarr:     http://$(hostname -I | awk '{print $1}'):9696"
-echo "  - Whisparr:     http://$(hostname -I | awk '{print $1}'):6969"
 echo ""
 echo "Installation location: $INSTALL_DIR"
 echo ""
