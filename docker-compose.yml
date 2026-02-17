@@ -293,29 +293,16 @@ services:
       - "${TAUTULLI_PORT:-8181}:8181"
     restart: unless-stopped
 
-  # Overseerr - Direct network access (Request management for Plex)
-  overseerr:
-    image: lscr.io/linuxserver/overseerr:latest
-    container_name: overseerr
+  # Seerr - Direct network access (Request management for Plex/Jellyfin)
+  seerr:
+    image: ghcr.io/seerr-team/seerr:latest
+    init: true
+    container_name: seerr
     environment:
-      - PUID=${PUID:-1000}
-      - PGID=${PGID:-1000}
+      - LOG_LEVEL=debug
       - TZ=${TZ:-America/New_York}
     volumes:
-      - ./overseerr/config:/config
+      - ./seerr/config:/app/config
     ports:
-      - "${OVERSEERR_PORT:-5055}:5055"
-    restart: unless-stopped
-
-  # Jellyseerr - Direct network access (Request management for Jellyfin)
-  jellyseerr:
-    image: fallenbagel/jellyseerr:latest
-    container_name: jellyseerr
-    environment:
-      - LOG_LEVEL=info
-      - TZ=${TZ:-America/New_York}
-    volumes:
-      - ./jellyseerr/config:/app/config
-    ports:
-      - "${JELLYSEERR_PORT:-5056}:5055"
+      - "${SEERR_PORT:-5055}:5055"
     restart: unless-stopped

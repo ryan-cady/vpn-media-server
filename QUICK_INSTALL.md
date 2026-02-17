@@ -13,7 +13,7 @@ chmod +x install.sh
 The installer is **fully interactive** and will guide you through:
 - ✅ Installing Docker & Docker Compose automatically
 - ✅ Choosing which media servers to install (Plex, Emby, Jellyfin, Channels DVR)
-- ✅ Choosing optional services (Readarr, Bazarr, Tautulli, Overseerr, Jellyseerr, FlareSolverr)
+- ✅ Choosing optional services (Readarr, Bazarr, Tautulli, Seerr, FlareSolverr)
 - ✅ Selecting your VPN provider (PIA, NordVPN, ExpressVPN, Surfshark, Mullvad, ProtonVPN, or custom)
 - ✅ Entering your VPN credentials
 - ✅ Detecting your network settings
@@ -48,8 +48,7 @@ During installation, you'll be asked which media servers to install:
 | **Bazarr** | Automatic subtitle downloads | If you need subtitles |
 | **FlareSolverr** | Bypass Cloudflare on indexers | If indexers get blocked |
 | **Tautulli** | Plex monitoring & statistics | If you installed Plex |
-| **Overseerr** | User requests for Plex | If you want request management for Plex |
-| **Jellyseerr** | User requests for Jellyfin | If you want request management for Jellyfin |
+| **Seerr** | User requests for Plex/Jellyfin | If you want request management |
 
 The installer will only ask about relevant services (e.g., Tautulli only appears if you chose Plex).
 
@@ -115,8 +114,7 @@ Replace `YOUR_IP` with your server's IP (find with: `hostname -I`)
 | Readarr | http://YOUR_IP:8787 | ✅ Yes |
 | Bazarr | http://YOUR_IP:6767 | ✅ Yes |
 | Tautulli | http://YOUR_IP:8181 | ❌ No |
-| Overseerr | http://YOUR_IP:5055 | ❌ No |
-| Jellyseerr | http://YOUR_IP:5056 | ❌ No |
+| Seerr | http://YOUR_IP:5055 | ❌ No |
 
 **Note:** Media servers and monitoring tools run outside VPN for best performance. Only torrenting is VPN-protected.
 
@@ -350,8 +348,7 @@ Or just re-run the installer - it will detect existing services.
 | Jellyfin | 8096 | HTTP |
 | Channels DVR | 8089 | HTTP |
 | Tautulli | 8181 | HTTP |
-| Overseerr | 5055 | HTTP |
-| Jellyseerr | 5056 | HTTP |
+| Seerr | 5055 | HTTP |
 | FlareSolverr | 8191 | HTTP |
 
 ---
@@ -376,7 +373,7 @@ Or just re-run the installer - it will detect existing services.
 4. **Test Kill Switch Monthly**: Ensure VPN protection is working
 5. **Backup Configs**: The config directories contain all your settings
 6. **Monitor with Tautulli**: Great for Plex statistics and notifications
-7. **Use Overseerr/Jellyseerr**: Let users request content easily
+7. **Use Seerr**: Let users request content easily
 8. **Try Multiple Media Servers**: See which you prefer before settling
 
 ---

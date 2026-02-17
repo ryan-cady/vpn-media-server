@@ -159,21 +159,12 @@ if [[ " ${SELECTED_MEDIA_SERVERS[@]} " =~ " plex " ]]; then
     fi
 fi
 
-# Overseerr (Plex request management)
-if [[ " ${SELECTED_MEDIA_SERVERS[@]} " =~ " plex " ]]; then
-    read -p "Install Overseerr (Plex request management)? (y/N): " INSTALL_OVERSEERR
-    if [[ $INSTALL_OVERSEERR =~ ^[Yy]$ ]]; then
-        SELECTED_OPTIONAL_SERVICES+=("overseerr")
-        echo -e "${GREEN}✓ Overseerr will be installed${NC}"
-    fi
-fi
-
-# Jellyseerr (Jellyfin request management)
-if [[ " ${SELECTED_MEDIA_SERVERS[@]} " =~ " jellyfin " ]]; then
-    read -p "Install Jellyseerr (Jellyfin request management)? (y/N): " INSTALL_JELLYSEERR
-    if [[ $INSTALL_JELLYSEERR =~ ^[Yy]$ ]]; then
-        SELECTED_OPTIONAL_SERVICES+=("jellyseerr")
-        echo -e "${GREEN}✓ Jellyseerr will be installed${NC}"
+# Seerr (Request management for Plex/Jellyfin)
+if [[ " ${SELECTED_MEDIA_SERVERS[@]} " =~ " plex " ]] || [[ " ${SELECTED_MEDIA_SERVERS[@]} " =~ " jellyfin " ]]; then
+    read -p "Install Seerr (request management for Plex/Jellyfin)? (y/N): " INSTALL_SEERR
+    if [[ $INSTALL_SEERR =~ ^[Yy]$ ]]; then
+        SELECTED_OPTIONAL_SERVICES+=("seerr")
+        echo -e "${GREEN}✓ Seerr will be installed${NC}"
     fi
 fi
 
@@ -683,37 +674,20 @@ if [[ " ${SELECTED_OPTIONAL_SERVICES[@]} " =~ " tautulli " ]]; then
 EOF
 fi
 
-if [[ " ${SELECTED_OPTIONAL_SERVICES[@]} " =~ " overseerr " ]]; then
+if [[ " ${SELECTED_OPTIONAL_SERVICES[@]} " =~ " seerr " ]]; then
     cat >> docker-compose.yml << 'EOF'
 
-  overseerr:
-    image: lscr.io/linuxserver/overseerr:latest
-    container_name: overseerr
+  seerr:
+    image: ghcr.io/seerr-team/seerr:latest
+    init: true
+    container_name: seerr
     environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
+      - LOG_LEVEL=debug
       - TZ=${TZ}
     volumes:
-      - ./overseerr/config:/config
+      - ./seerr/config:/app/config
     ports:
-      - "${OVERSEERR_PORT:-5055}:5055"
-    restart: unless-stopped
-EOF
-fi
-
-if [[ " ${SELECTED_OPTIONAL_SERVICES[@]} " =~ " jellyseerr " ]]; then
-    cat >> docker-compose.yml << 'EOF'
-
-  jellyseerr:
-    image: fallenbagel/jellyseerr:latest
-    container_name: jellyseerr
-    environment:
-      - LOG_LEVEL=info
-      - TZ=${TZ}
-    volumes:
-      - ./jellyseerr/config:/app/config
-    ports:
-      - "${JELLYSEERR_PORT:-5056}:5055"
+      - "${SEERR_PORT:-5055}:5055"
     restart: unless-stopped
 EOF
 fi
@@ -793,8 +767,7 @@ EOF
 [[ " ${SELECTED_MEDIA_SERVERS[@]} " =~ " jellyfin " ]] && echo -e "JELLYFIN_PORT=8096\nJELLYFIN_PORT_HTTPS=8920" >> .env
 [[ " ${SELECTED_MEDIA_SERVERS[@]} " =~ " channels-dvr " ]] && echo "CHANNELS_PORT=8089" >> .env
 [[ " ${SELECTED_OPTIONAL_SERVICES[@]} " =~ " tautulli " ]] && echo "TAUTULLI_PORT=8181" >> .env
-[[ " ${SELECTED_OPTIONAL_SERVICES[@]} " =~ " overseerr " ]] && echo "OVERSEERR_PORT=5055" >> .env
-[[ " ${SELECTED_OPTIONAL_SERVICES[@]} " =~ " jellyseerr " ]] && echo "JELLYSEERR_PORT=5056" >> .env
+[[ " ${SELECTED_OPTIONAL_SERVICES[@]} " =~ " seerr " ]] && echo "SEERR_PORT=5055" >> .env
 
 echo -e "${GREEN}✓ Created .env file${NC}"
 echo ""
@@ -880,8 +853,7 @@ for service in "${SELECTED_OPTIONAL_SERVICES[@]}"; do
         readarr) echo "  - Readarr:      http://${SERVER_IP}:8787" ;;
         bazarr) echo "  - Bazarr:       http://${SERVER_IP}:6767" ;;
         tautulli) echo "  - Tautulli:     http://${SERVER_IP}:8181" ;;
-        overseerr) echo "  - Overseerr:    http://${SERVER_IP}:5055" ;;
-        jellyseerr) echo "  - Jellyseerr:   http://${SERVER_IP}:5056" ;;
+        seerr) echo "  - Seerr:        http://${SERVER_IP}:5055" ;;
     esac
 done
 

@@ -67,8 +67,7 @@ The installer will guide you through selecting:
 | **Bazarr** | 6767 | Automatic subtitle downloads | ✅ Yes |
 | **FlareSolverr** | 8191 | Cloudflare bypass for indexers | ✅ Yes |
 | **Tautulli** | 8181 | Plex monitoring & statistics | ❌ No |
-| **Overseerr** | 5055 | Plex request management | ❌ No |
-| **Jellyseerr** | 5056 | Jellyfin request management | ❌ No |
+| **Seerr** | 5055 | Plex/Jellyfin request management | ❌ No |
 
 **Note:** Media servers and companion tools run outside VPN for optimal streaming performance and device discovery.
 
@@ -122,7 +121,7 @@ Don't see yours? Gluetun supports **50+ VPN providers** - select "Custom" during
     - Plex/Emby/Jellyfin                      │
     - Channels DVR                    ┌───────┴───────┐
     - Tautulli                        │               │
-    - Overseerr/Jellyseerr      Kill Switch    All Torrent
+    - Seerr      Kill Switch    All Torrent
                                       │          Services
                                  [VPN Tunnel]      │
                                       │            │
@@ -362,20 +361,11 @@ Settings → Media Management → Root Folders:
 
 ### 6. Optional: Set Up Request Management
 
-#### Overseerr (for Plex)
+#### Seerr (for Plex/Jellyfin)
 ```
 1. Go to http://YOUR_IP:5055
-2. Sign in with Plex account
-3. Connect to Plex server
-4. Add Radarr and Sonarr
-5. Configure request rules
-```
-
-#### Jellyseerr (for Jellyfin)
-```
-1. Go to http://YOUR_IP:5056
-2. Complete setup wizard
-3. Connect to Jellyfin server
+2. Sign in with your Plex or Jellyfin account
+3. Connect to your media server
 4. Add Radarr and Sonarr
 5. Configure request rules
 ```
@@ -399,7 +389,7 @@ Settings → Media Management → Root Folders:
 
 **Method 2: Through Request System**
 ```
-1. Users go to Overseerr or Jellyseerr
+1. Users go to Seerr
 2. Search for movie/show
 3. Click "Request"
 4. Automatically added to Radarr/Sonarr
@@ -644,8 +634,7 @@ This project uses excellent open-source software:
 - [Readarr](https://readarr.com/) - Book management
 - [Prowlarr](https://prowlarr.com/) - Indexer manager
 - [Bazarr](https://www.bazarr.media/) - Subtitle management
-- [Overseerr](https://overseerr.dev/) - Request management for Plex
-- [Jellyseerr](https://github.com/Fallenbagel/jellyseerr) - Request management for Jellyfin
+- [Seerr](https://github.com/seerr-team/seerr) - Request management for Plex/Jellyfin
 - [Tautulli](https://tautulli.com/) - Plex monitoring
 
 ---
