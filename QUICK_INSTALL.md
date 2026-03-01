@@ -13,7 +13,7 @@ chmod +x install.sh
 The installer is **fully interactive** and will guide you through:
 - ✅ Installing Docker & Docker Compose automatically
 - ✅ Choosing which media servers to install (Plex, Emby, Jellyfin, Channels DVR)
-- ✅ Choosing optional services (Readarr, Bazarr, Tautulli, Seerr, FlareSolverr)
+- ✅ Choosing optional services (Readarr, Bazarr, Tautulli, Seerr, FlareSolverr, Channels Manager)
 - ✅ Selecting your VPN provider (PIA, NordVPN, ExpressVPN, Surfshark, Mullvad, ProtonVPN, or custom)
 - ✅ Entering your VPN credentials
 - ✅ Detecting your network settings
@@ -49,8 +49,9 @@ During installation, you'll be asked which media servers to install:
 | **FlareSolverr** | Bypass Cloudflare on indexers | If indexers get blocked |
 | **Tautulli** | Plex monitoring & statistics | If you installed Plex |
 | **Seerr** | User requests for Plex/Jellyfin | If you want request management |
+| **Channels Manager** | Bulk channel management UI | If you installed Channels DVR |
 
-The installer will only ask about relevant services (e.g., Tautulli only appears if you chose Plex).
+The installer will only ask about relevant services (e.g., Tautulli only appears if you chose Plex, Channels Manager only appears if you chose Channels DVR).
 
 ---
 
@@ -115,6 +116,7 @@ Replace `YOUR_IP` with your server's IP (find with: `hostname -I`)
 | Bazarr | http://YOUR_IP:6767 | ✅ Yes |
 | Tautulli | http://YOUR_IP:8181 | ❌ No |
 | Seerr | http://YOUR_IP:5055 | ❌ No |
+| Channels Manager | http://YOUR_IP:8090 | ❌ No |
 
 **Note:** Media servers and monitoring tools run outside VPN for best performance. Only torrenting is VPN-protected.
 
@@ -164,6 +166,7 @@ docker exec gluetun wget -qO- ifconfig.me
    - **Emby**: Go to http://YOUR_IP:8096 → Complete setup wizard
    - **Jellyfin**: Go to http://YOUR_IP:8096 → Complete setup wizard
    - **Channels DVR**: Go to http://YOUR_IP:8089 → Add TV sources
+   - **Channels Manager**: Go to http://YOUR_IP:8090 → Bulk manage channel visibility & favorites
 
 4. **Configure Prowlarr**:
    - Go to http://YOUR_IP:9696
@@ -347,6 +350,7 @@ Or just re-run the installer - it will detect existing services.
 | Emby | 8096 | HTTP |
 | Jellyfin | 8096 | HTTP |
 | Channels DVR | 8089 | HTTP |
+| Channels Manager | 8090 | HTTP |
 | Tautulli | 8181 | HTTP |
 | Seerr | 5055 | HTTP |
 | FlareSolverr | 8191 | HTTP |
@@ -374,7 +378,8 @@ Or just re-run the installer - it will detect existing services.
 5. **Backup Configs**: The config directories contain all your settings
 6. **Monitor with Tautulli**: Great for Plex statistics and notifications
 7. **Use Seerr**: Let users request content easily
-8. **Try Multiple Media Servers**: See which you prefer before settling
+8. **Use Channels Manager**: Easily bulk-hide unwanted channels in Channels DVR
+9. **Try Multiple Media Servers**: See which you prefer before settling
 
 ---
 
