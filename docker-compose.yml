@@ -279,6 +279,16 @@ services:
       - "${CHANNELS_PORT:-8089}:8089"  # Web UI
     restart: unless-stopped
 
+  # Channels Manager - Bulk channel management UI for Channels DVR (optional)
+  # channels-manager:
+  #   build: https://github.com/ryan-cady/channels-manager.git
+  #   container_name: channels-manager
+  #   environment:
+  #     - CHANNELS_DVR_HOST=${CHANNELS_DVR_HOST:-<your-server-ip>:8089}
+  #   ports:
+  #     - "${CHANNELS_MANAGER_PORT:-8090}:80"
+  #   restart: unless-stopped
+
   # Tautulli - Direct network access (Plex monitoring)
   tautulli:
     image: lscr.io/linuxserver/tautulli:latest

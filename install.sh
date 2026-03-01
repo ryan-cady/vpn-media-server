@@ -168,6 +168,15 @@ if [[ " ${SELECTED_MEDIA_SERVERS[@]} " =~ " plex " ]] || [[ " ${SELECTED_MEDIA_S
     fi
 fi
 
+# Channels Manager (bulk channel management UI for Channels DVR)
+if [[ " ${SELECTED_MEDIA_SERVERS[@]} " =~ " channels-dvr " ]]; then
+    read -p "Install Channels Manager (bulk channel management for Channels DVR)? (y/N): " INSTALL_CHANNELS_MANAGER
+    if [[ $INSTALL_CHANNELS_MANAGER =~ ^[Yy]$ ]]; then
+        SELECTED_OPTIONAL_SERVICES+=("channels-manager")
+        echo -e "${GREEN}✓ Channels Manager will be installed${NC}"
+    fi
+fi
+
 echo ""
 echo -e "${BLUE}Step 5: Selecting VPN Provider...${NC}"
 echo "=========================================="
@@ -329,6 +338,7 @@ echo ""
 echo -e "${BLUE}Step 7: Configuring system settings...${NC}"
 echo "=========================================="
 
+SERVER_IP=$(hostname -I | awk '{print $1}')
 USER_ID=$(id -u)
 GROUP_ID=$(id -g)
 echo "Your PUID: $USER_ID"
@@ -692,6 +702,20 @@ if [[ " ${SELECTED_OPTIONAL_SERVICES[@]} " =~ " seerr " ]]; then
 EOF
 fi
 
+if [[ " ${SELECTED_OPTIONAL_SERVICES[@]} " =~ " channels-manager " ]]; then
+    cat >> docker-compose.yml << 'EOF'
+
+  channels-manager:
+    build: https://github.com/ryan-cady/channels-manager.git
+    container_name: channels-manager
+    environment:
+      - CHANNELS_DVR_HOST=${CHANNELS_DVR_HOST}
+    ports:
+      - "${CHANNELS_MANAGER_PORT:-8090}:80"
+    restart: unless-stopped
+EOF
+fi
+
 echo -e "${GREEN}✓ Created docker-compose.yml${NC}"
 
 # Create .env file
@@ -768,6 +792,7 @@ EOF
 [[ " ${SELECTED_MEDIA_SERVERS[@]} " =~ " channels-dvr " ]] && echo "CHANNELS_PORT=8089" >> .env
 [[ " ${SELECTED_OPTIONAL_SERVICES[@]} " =~ " tautulli " ]] && echo "TAUTULLI_PORT=8181" >> .env
 [[ " ${SELECTED_OPTIONAL_SERVICES[@]} " =~ " seerr " ]] && echo "SEERR_PORT=5055" >> .env
+[[ " ${SELECTED_OPTIONAL_SERVICES[@]} " =~ " channels-manager " ]] && echo -e "CHANNELS_MANAGER_PORT=8090\nCHANNELS_DVR_HOST=${SERVER_IP}:8089" >> .env
 
 echo -e "${GREEN}✓ Created .env file${NC}"
 echo ""
@@ -831,7 +856,6 @@ echo "=========================================="
 echo -e "${GREEN}Installation Complete!${NC}"
 echo "=========================================="
 echo ""
-SERVER_IP=$(hostname -I | awk '{print $1}')
 echo "Access your services:"
 echo "  - qBittorrent:  http://${SERVER_IP}:8080"
 echo "  - Radarr:       http://${SERVER_IP}:7878"
@@ -850,10 +874,11 @@ done
 
 for service in "${SELECTED_OPTIONAL_SERVICES[@]}"; do
     case $service in
-        readarr) echo "  - Readarr:      http://${SERVER_IP}:8787" ;;
-        bazarr) echo "  - Bazarr:       http://${SERVER_IP}:6767" ;;
-        tautulli) echo "  - Tautulli:     http://${SERVER_IP}:8181" ;;
-        seerr) echo "  - Seerr:        http://${SERVER_IP}:5055" ;;
+        readarr) echo "  - Readarr:          http://${SERVER_IP}:8787" ;;
+        bazarr) echo "  - Bazarr:           http://${SERVER_IP}:6767" ;;
+        tautulli) echo "  - Tautulli:         http://${SERVER_IP}:8181" ;;
+        seerr) echo "  - Seerr:            http://${SERVER_IP}:5055" ;;
+        channels-manager) echo "  - Channels Manager: http://${SERVER_IP}:8090" ;;
     esac
 done
 
