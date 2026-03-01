@@ -68,6 +68,7 @@ The installer will guide you through selecting:
 | **FlareSolverr** | 8191 | Cloudflare bypass for indexers | ✅ Yes |
 | **Tautulli** | 8181 | Plex monitoring & statistics | ❌ No |
 | **Seerr** | 5055 | Plex/Jellyfin request management | ❌ No |
+| **Channels Manager** | 8090 | Bulk channel management for Channels DVR | ❌ No |
 
 **Note:** Media servers and companion tools run outside VPN for optimal streaming performance and device discovery.
 
@@ -121,7 +122,8 @@ Don't see yours? Gluetun supports **50+ VPN providers** - select "Custom" during
     - Plex/Emby/Jellyfin                      │
     - Channels DVR                    ┌───────┴───────┐
     - Tautulli                        │               │
-    - Seerr      Kill Switch    All Torrent
+    - Seerr                    Kill Switch    All Torrent
+    - Channels Manager
                                       │          Services
                                  [VPN Tunnel]      │
                                       │            │
@@ -368,6 +370,32 @@ Settings → Media Management → Root Folders:
 3. Connect to your media server
 4. Add Radarr and Sonarr
 5. Configure request rules
+```
+
+### 7. Optional: Set Up Channels Manager (for Channels DVR)
+
+Channels Manager provides a web UI to bulk-manage channel visibility and favorites across all your Channels DVR sources.
+
+```
+1. Go to http://YOUR_IP:8090
+2. The app will automatically connect to your Channels DVR server
+   (configured via CHANNELS_DVR_HOST in .env)
+3. Select a source from the dropdown
+4. Use bulk actions to favorite, hide, or show channels
+```
+
+**Manual setup** (if not installed via the installer):
+
+```yaml
+# Add to docker-compose.yml:
+channels-manager:
+  build: https://github.com/ryan-cady/channels-manager.git
+  container_name: channels-manager
+  environment:
+    - CHANNELS_DVR_HOST=YOUR_SERVER_IP:8089
+  ports:
+    - "8090:80"
+  restart: unless-stopped
 ```
 
 ---
@@ -636,6 +664,7 @@ This project uses excellent open-source software:
 - [Bazarr](https://www.bazarr.media/) - Subtitle management
 - [Seerr](https://github.com/seerr-team/seerr) - Request management for Plex/Jellyfin
 - [Tautulli](https://tautulli.com/) - Plex monitoring
+- [Channels Manager](https://github.com/ryan-cady/channels-manager) - Bulk channel management for Channels DVR
 
 ---
 
